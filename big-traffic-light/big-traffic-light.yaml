@@ -1,0 +1,80 @@
+substitutions:
+  mqtt_prefix: bus/devices/big-traffic-light
+  # Perhaps, doesn't matter as LEDs flickers at grid's 50Hz anyway.
+  pwm_freq: 5kHz
+
+esphome:
+  name: big-traffic-light
+  comment: Big red-yellow-green traffic light
+  platformio_options:
+    board_build.flash_mode: qio
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+ota:
+  safe_mode: true
+  password: !secret api_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_psk
+  fast_connect: true
+
+logger:
+
+mqtt:
+  broker: !secret mqtt_broker
+  certificate_authority: !secret mqtt_ca
+  discovery: false
+  password: !secret mqtt_password
+  port: !secret mqtt_port
+  topic_prefix: ${mqtt_prefix}
+  username: !secret mqtt_username
+  on_message:
+    - topic: ${mqtt_prefix}/red
+      then:
+        - lambda: |-
+            auto br = parse_number<int>(x);
+            id(big_traffic_light_red).set_level(br.value() / 255.0);
+        - logger.log:
+            format: "red: %.2f%%"
+            args: [parse_number<int>(x).value() / 255.0 * 100]
+
+    - topic: ${mqtt_prefix}/yellow
+      then:
+        - lambda: |-
+            auto br = parse_number<int>(x);
+            float float_brightness = br.value() / 255.0 ;
+            ESP_LOGD("main", "%f", float_brightness * 100);
+            id(big_traffic_light_yellow).set_level(float_brightness);
+        - logger.log:
+            format: "yellow: %.2f%%"
+            args: [parse_number<int>(x).value() / 255.0 * 100]
+
+    - topic: ${mqtt_prefix}/green
+      then:
+        - lambda: |-
+            auto br = parse_number<int>(x);
+            id(big_traffic_light_green).set_level(br.value() / 255.0);
+        - logger.log:
+            format: "green: %.2f%%"
+            args: [parse_number<float>(x).value() / 255.0 * 100]
+
+output:
+  - platform: ledc
+    pin: 25
+    id: big_traffic_light_red
+    frequency: ${pwm_freq}
+
+  - platform: ledc
+    pin: 33
+    id: big_traffic_light_yellow
+    frequency: ${pwm_freq}
+
+  - platform: ledc
+    pin: 32
+    id: big_traffic_light_green
+    frequency: ${pwm_freq}
