@@ -1,10 +1,12 @@
 esphome:
   name: sp4ce-button
+  platformio_options:
+    board_build.flash_mode: qio
 
-esp8266:
-  board: esp12e
+esp32:
+  board: esp32dev
   framework:
-    version: 2.7.4
+    type: esp-idf
 
 logger:
 
@@ -17,12 +19,13 @@ wifi:
   fast_connect: true
 
 light:
-  - platform: fastled_clockless
+  - platform: esp32_rmt_led_strip
     id: led
-    chipset: WS2812B
-    pin: 2
+    chipset: WS2812
+    pin: 25
     num_leds: 3
     rgb_order: GRB
+    rmt_channel: 0
     restore_mode: ALWAYS_OFF
     effects:
       - addressable_rainbow:
@@ -34,7 +37,7 @@ binary_sensor:
   - platform: gpio
     id: button
     pin:
-      number: 4
+      number: 26
       mode: INPUT_PULLUP
       inverted: true
     filters:
@@ -67,6 +70,7 @@ mqtt:
   port: !secret mqtt_port
   topic_prefix: bus/devices/opener.button
   username: !secret mqtt_username
+  certificate_authority: !secret mqtt_ca
   on_message:
     - topic: bus/devices/opener.button/rainbow
       payload: 'on'

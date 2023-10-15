@@ -15,9 +15,10 @@ Publish `on` or `off` to the `bus/devices/opener.button/rainbow` topic to contro
 
 The Button is powered with `DC 5V`.
 
-3 addressable WS2812B LEDs are connected to `GPIO2`.
+3 addressable WS2812B LEDs are connected to `GPIO25`.
 
-The button of the button is connected to `GPIO4`.
+The button of the button is connected to `GPIO26`. 
+Another pole of button connected to GND. Only internal pullup is used.
 
 ## Building and Flashing
 ### Dependencies
@@ -34,4 +35,4 @@ One simple command will build the firmware and flash the ESP8266.
 esphome run sp4ce-button.yaml
 ```
 
-The ESP8266 is flashed Over The Air by default. If you have a USB-UART adapter connected, you will be able to use it to flash over UART.
+The ESP32 is flashed Over The Air by default.
