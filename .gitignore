@@ -4,3 +4,10 @@
 .esphome/
 secrets.yaml
 node_modules/
+
+# Platform.io
+.pioenvs
+.piolibdeps
+.clang_complete
+.gcc-flags.json
+.pio
