@@ -1,0 +1,132 @@
+substitutions:
+  mqtt_prefix: bus/devices/indoor-meteo
+
+esphome:
+  name: indoor-meteo
+  comment: Indoor meteo sensor
+  on_boot:
+    then:
+      - output.turn_on: gpio_red_led
+      - delay: 0.25s
+      - output.turn_off: gpio_red_led
+      - output.turn_on: gpio_yellow_led
+      - delay: 0.25s
+      - output.turn_off: gpio_yellow_led
+      - output.turn_on: gpio_green_led
+      - delay: 0.25s
+      - output.turn_off: gpio_green_led
+      - output.turn_on: gpio_red_led
+      - delay: 0.25s
+      - output.turn_off: gpio_red_led
+      - output.turn_on: gpio_yellow_led
+      - delay: 0.25s
+      - output.turn_off: gpio_yellow_led
+      - output.turn_on: gpio_green_led
+      - delay: 0.25s
+      - output.turn_off: gpio_green_led
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+ota:
+  safe_mode: true
+  password: !secret api_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_psk
+  fast_connect: true
+
+logger:
+
+mqtt:
+  broker: !secret mqtt_broker
+  certificate_authority: !secret mqtt_ca
+  discovery: false
+  password: !secret mqtt_password
+  port: !secret mqtt_port
+  topic_prefix: ${mqtt_prefix}
+  username: !secret mqtt_username
+  on_message:
+    - topic: ${mqtt_prefix}/calibrate_mhz19
+      then:
+        - mhz19.calibrate_zero: mhz19_sensor
+  on_connect:
+    then:
+      - output.turn_on: gpio_red_led
+      - output.turn_on: gpio_yellow_led
+      - output.turn_on: gpio_green_led
+      - delay: 0.25s
+      - output.turn_off: gpio_red_led
+      - output.turn_off: gpio_yellow_led
+      - output.turn_off: gpio_green_led
+      - delay: 0.25s
+      - output.turn_on: gpio_red_led
+      - output.turn_on: gpio_yellow_led
+      - output.turn_on: gpio_green_led
+      - delay: 0.25s
+      - output.turn_off: gpio_red_led
+      - output.turn_off: gpio_yellow_led
+      - output.turn_off: gpio_green_led
+
+i2c:
+  sda: GPIO21
+  scl: GPIO22
+  scan: true
+
+uart:
+  tx_pin: GPIO17
+  rx_pin: GPIO16
+  baud_rate: 9600
+
+sensor:
+  - id: bme280_sensor
+    platform: bme280_i2c
+    address: 0x76
+    temperature:
+      name: bme280_temperature
+    pressure:
+      name: bme280_pressure
+    humidity:
+      name: bme280_humidity
+    update_interval: 15s
+  - id: mhz19_sensor
+    platform: mhz19
+    co2:
+      name: mhz19_co2
+      on_value:
+        then:
+          - lambda: |-
+              if (x < 800) {
+                id(gpio_red_led).turn_off();
+                id(gpio_yellow_led).turn_off();
+                id(gpio_green_led).turn_on();
+              }
+              if (x >= 800 && x < 1200) {
+                id(gpio_red_led).turn_off();
+                id(gpio_yellow_led).turn_on();
+                id(gpio_green_led).turn_off();
+              }
+              if (x >= 1200) {
+                id(gpio_red_led).turn_on();
+                id(gpio_yellow_led).turn_off();
+                id(gpio_green_led).turn_off();
+              }
+    temperature:
+      name: mhz19_temperature
+    update_interval: 15s
+    automatic_baseline_calibration: false
+
+
+output:
+  - platform: gpio
+    pin: GPIO27
+    id: gpio_red_led
+  - platform: gpio
+    pin: GPIO26
+    id: gpio_yellow_led
+  - platform: gpio
+    pin: GPIO32
+    id: gpio_green_led

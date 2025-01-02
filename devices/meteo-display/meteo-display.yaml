@@ -1,0 +1,48 @@
+substitutions:
+  mqtt_prefix: bus/devices/meteo-display
+
+esphome:
+  name: meteo-display
+  comment: AIU meteo display
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+ota:
+  - platform: esphome
+    password: !secret api_password
+
+safe_mode:
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_psk
+  fast_connect: true
+
+logger:
+
+mqtt:
+  broker: !secret mqtt_broker
+  certificate_authority: !secret mqtt_ca
+  discovery: false
+  password: !secret mqtt_password
+  port: !secret mqtt_port
+  topic_prefix: ${mqtt_prefix}
+  username: !secret mqtt_username
+  on_message:
+    - topic: ${mqtt_prefix}/data
+      then:
+        - lambda: |-
+            id(aiu_display).display(x);
+
+external_components:
+  - source:
+      type: local 
+      path: custom_components
+
+aiu:
+  id: aiu_display
+  positive: GPIO25
+  negative: GPIO26
