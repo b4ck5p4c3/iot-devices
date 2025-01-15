@@ -11,8 +11,10 @@ esp32:
 logger:
 
 ota:
-  password: !secret api_password
+  - platform: esphome
+    password: !secret api_password
 
+safe_mode:
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_psk

@@ -13,8 +13,10 @@ esp32:
     type: esp-idf
 
 ota:
-  safe_mode: true
-  password: !secret api_password
+  - platform: esphome
+    password: !secret api_password
+
+safe_mode:
 
 wifi:
   ssid: !secret wifi_ssid
@@ -36,7 +38,7 @@ switch:
 
   - platform: gpio
     restore_mode: RESTORE_DEFAULT_ON
-    pin: 
+    pin:
       number: 21
       inverted: true
     name: "Green lamp"
