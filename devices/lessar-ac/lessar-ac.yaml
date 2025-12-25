@@ -1,0 +1,116 @@
+substitutions:
+  mqtt_prefix: bus/devices/lessar-ac
+
+esphome:
+  name: lessar-ac
+  comment: Lessar LS-HE18KCE2 air conditioner
+
+esp32:
+  board: esp32-c3-devkitm-1
+  framework:
+    type: esp-idf
+
+external_components:
+  - source: github://pr#12646
+    components: [midea]
+    refresh: 1h
+
+ota:
+  - platform: esphome
+    password: !secret api_password
+
+safe_mode:
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_psk
+  fast_connect: true
+
+logger:
+  baud_rate: 0
+
+mqtt:
+  broker: !secret mqtt_broker
+  certificate_authority: !secret mqtt_ca
+  discovery: false
+  password: !secret mqtt_password
+  port: !secret mqtt_port
+  topic_prefix: ${mqtt_prefix}
+  username: !secret mqtt_username
+  on_message:
+    - topic: ${mqtt_prefix}/power/set
+      payload: "on"
+      then:
+        - midea_ac.power_on:
+    - topic: ${mqtt_prefix}/power/set
+      payload: "off"
+      then:
+        - midea_ac.power_off:
+    - topic: ${mqtt_prefix}/power/set
+      payload: "toggle"
+      then:
+        - midea_ac.power_toggle:
+    - topic: ${mqtt_prefix}/display/set
+      payload: "toggle"
+      then:
+        - midea_ac.display_toggle:
+    - topic: ${mqtt_prefix}/beeper/set
+      payload: "on"
+      then:
+        - midea_ac.beeper_on:
+    - topic: ${mqtt_prefix}/beeper/set
+      payload: "off"
+      then:
+        - midea_ac.beeper_off:
+    - topic: ${mqtt_prefix}/swing_step/set
+      then:
+        - midea_ac.swing_step:
+    - topic: ${mqtt_prefix}/follow_me/set
+      then:
+        - midea_ac.follow_me:
+            temperature: !lambda "return atof(x.c_str());"
+            beeper: false
+
+uart:
+  tx_pin: GPIO21
+  rx_pin: GPIO20
+  baud_rate: 9600
+
+climate:
+  - platform: midea
+    id: ac
+    name: lessar_ac
+    period: 1s
+    timeout: 2s
+    num_attempts: 3
+    autoconf: true
+    beeper: false
+    visual:
+      min_temperature: 17 °C
+      max_temperature: 30 °C
+      temperature_step: 1 °C
+    supported_modes:
+      - FAN_ONLY
+      - HEAT_COOL
+      - COOL
+      - HEAT
+      - DRY
+    custom_fan_modes:
+      - SILENT
+      - TURBO
+    supported_presets:
+      - ECO
+      - BOOST
+      - SLEEP
+    custom_presets:
+      - FREEZE_PROTECTION
+    supported_swing_modes:
+      - VERTICAL
+      - HORIZONTAL
+      - BOTH
+    outdoor_temperature:
+      name: lessar_outdoor_temp
+    power_usage:
+      name: lessar_power
+    humidity_setpoint:
+      name: lessar_humidity
