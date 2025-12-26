@@ -85,6 +85,11 @@ climate:
     num_attempts: 3
     autoconf: true
     beeper: false
+    mode_command_topic: ${mqtt_prefix}/climate/mode/set
+    target_temperature_command_topic: ${mqtt_prefix}/climate/temperature/set
+    swing_mode_command_topic: ${mqtt_prefix}/climate/swing_mode/set
+    fan_mode_command_topic: ${mqtt_prefix}/climate/fan_mode/set
+    preset_command_topic: ${mqtt_prefix}/climate/preset/set
     visual:
       min_temperature: 17 °C
       max_temperature: 30 °C
