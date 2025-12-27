@@ -14,12 +14,21 @@ ota:
   - platform: esphome
     password: !secret api_password
 
+api:
+  encryption: 
+    key: !secret encryption_key
+  reboot_timeout: 0s
+
 safe_mode:
 
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_psk
-  fast_connect: true
+  fast_connect: false
+
+  min_auth_mode: WPA2
+  power_save_mode: NONE
+  reboot_timeout: 2min
 
 logger:
 

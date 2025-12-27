@@ -11,20 +11,30 @@ esp32:
     type: esp-idf
 
 external_components:
-  - source: github://pr#12646
+  - source:
+      type: local
+      path: /Users/xanmilanto/git/esphome-fork/esphome/components
     components: [midea]
-    refresh: 1h
 
 ota:
   - platform: esphome
     password: !secret api_password
+
+api:
+  encryption: 
+    key: !secret encryption_key
+  reboot_timeout: 0s
 
 safe_mode:
 
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_psk
-  fast_connect: true
+  fast_connect: false
+
+  min_auth_mode: WPA2
+  power_save_mode: NONE
+  reboot_timeout: 2min
 
 logger:
   baud_rate: 0
@@ -80,10 +90,10 @@ climate:
   - platform: midea
     id: ac
     name: lessar_ac
-    period: 1s
+    period: 3s
     timeout: 2s
-    num_attempts: 3
-    autoconf: true
+    num_attempts: 1
+    autoconf: false
     beeper: false
     mode_command_topic: ${mqtt_prefix}/climate/mode/set
     target_temperature_command_topic: ${mqtt_prefix}/climate/temperature/set

@@ -14,11 +14,21 @@ ota:
   - platform: esphome
     password: !secret api_password
 
+api:
+  encryption: 
+    key: !secret encryption_key
+  reboot_timeout: 0s
+
 safe_mode:
+
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_psk
-  fast_connect: true
+  fast_connect: false
+
+  min_auth_mode: WPA2
+  power_save_mode: NONE
+  reboot_timeout: 2min
 
 light:
   - platform: esp32_rmt_led_strip
@@ -27,7 +37,6 @@ light:
     pin: 25
     num_leds: 3
     rgb_order: GRB
-    rmt_channel: 0
     restore_mode: ALWAYS_OFF
     effects:
       - addressable_rainbow:
