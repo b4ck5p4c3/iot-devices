@@ -1,0 +1,31 @@
+---
+# Enable Native API
+api:
+  # Disable reboot in lack of API connections
+  reboot_timeout: 0s
+  encryption:
+    key: !secret api_password
+
+# Enable OTA over Native API
+ota:
+- platform: esphome
+  password: !secret api_password
+
+# Slightly reduce verbosity in relation to DEBUG
+logger:
+  level: INFO
+
+# Enable SNTP
+time:
+  - platform: sntp
+    id: sntp_time
+    timezone: Europe/Moscow
+    servers:
+      # Timekeeper
+      - 0.ntp.bksp.in
+
+      # Uxie fallback
+      - 10.0.2.1
+
+      # Pool fallback
+      - 0.ru.pool.ntp.org
