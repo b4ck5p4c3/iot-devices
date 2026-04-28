@@ -1,0 +1,74 @@
+---
+substitutions:
+  bksp_device_name: os-ir-blaster
+
+esphome:
+  name: os-ir-blaster
+  friendly_name: IR Blaster
+  area:
+    id: open_space
+    name: Open Space
+
+packages:
+  wifi: !include ../common/wifi.yaml
+  base: !include ../common/base.yaml
+  mqtt: !include ../common/mqtt.yaml
+
+esp32:
+  board: esp32-c3-devkitm-1
+  framework:
+    type: esp-idf
+
+wifi:
+  output_power: 8.5
+
+remote_receiver:
+  id: ir_rx
+  pin:
+    number: GPIO21
+    inverted: true
+    mode:
+      input: true
+      pullup: false
+  tolerance: 50%
+  filter: 250us
+  idle: 50ms
+  buffer_size: 10kb
+  rmt_symbols: 96
+  clock_resolution: 500000
+  dump:
+    - nec
+
+remote_transmitter:
+  id: ir_tx
+  pin: GPIO20
+  carrier_duty_percent: 50%
+  non_blocking: true
+
+mqtt:
+  on_message:
+    # Receives "0xADDR 0xCCMD" space-separated hex string for NEC commands
+    - topic: "bus/devices/${bksp_device_name}/tx/nec"
+      then:
+        - remote_transmitter.transmit_nec:
+            transmitter_id: ir_tx
+            address: !lambda |-
+              unsigned int addr = 0, cmd = 0;
+              sscanf(x.c_str(), "%x %x", &addr, &cmd);
+              return (uint16_t)addr;
+            command: !lambda |-
+              unsigned int addr = 0, cmd = 0;
+              sscanf(x.c_str(), "%x %x", &addr, &cmd);
+              return (uint16_t)cmd;
+
+
+infrared:
+  - platform: ir_rf_proxy
+    name: IR Proxy Transmitter
+    id: ir_proxy_tx
+    remote_transmitter_id: ir_tx
+
+  - platform: ir_rf_proxy
+    name: IR Proxy Receiver
+    id: ir_proxy_rx
+    remote_receiver_id: ir_rx
